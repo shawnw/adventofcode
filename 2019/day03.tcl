@@ -2,12 +2,7 @@
 
 package require sqlite3
 
-proc manhattan {x1 y1 x2 y2} {
-    return [expr {abs($x1 - $x2) + abs($y1 - $y2)}]
-}
-
 sqlite3 wires ":memory:"
-wires function manhattan -argcount 4 -deterministic -returntype integer {manhattan}
 wires eval {CREATE TABLE IF NOT EXISTS grid(id INTEGER, x INTEGER, y INTEGER, step INTEGER)}
 
 proc add_wire {input id} {
@@ -62,11 +57,11 @@ proc add_wires {wire1 wire2} {
 proc solve {wire1 wire2} {
     add_wires $wire1 $wire2
     return [wires eval {    
-        SELECT min(manhattan(0, 0, w1.x, w1.y)) AS distance,
+        SELECT min(abs(w1.x) + abs(w1.y)) AS distance,
                min(w1.step + w2.step) AS steps
         FROM grid AS w1
         JOIN grid AS w2 ON w1.id <> w2.id AND (w1.x, w1.y) = (w2.x, w2.y)
-        WHERE (w1.x, w1.y) <> (0, 0)
+        WHERE (w1.x, w1.y) <> (0, 0) AND w1.id = 0
     }]
 }
 
