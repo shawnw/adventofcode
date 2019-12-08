@@ -5,8 +5,6 @@ package require struct::graph::op
 
 proc solve {orbitlist} {
     ::struct::graph orbs
-    set san x
-    set you x
     foreach orbit $orbitlist {
         lassign [split $orbit ")"] parent child
         if {![orbs node exists $parent]} {
@@ -15,13 +13,7 @@ proc solve {orbitlist} {
         if {![orbs node exists $child]} {
             orbs node insert $child
         }
-        if {$child == "SAN"} {
-            set san $parent
-        }
-        if {$child == "YOU"} {
-            set you $parent
-        }
-        orbs arc setweight [orbs arc insert $parent $child] 1
+       orbs arc setweight [orbs arc insert $parent $child] 1
     }
     
     set lengths [::struct::graph::op::dijkstra orbs COM \
@@ -31,11 +23,10 @@ proc solve {orbitlist} {
         incr part1 $len
     }
     
-    set part2 [::struct::graph::op::distance orbs $you $san]
+    set part2 [expr {[::struct::graph::op::distance orbs YOU SAN] - 2}]
     return [list $part1 $part2]
 }
 
-set orbitlist [split [read -nonewline stdin] \n]
-lassign [solve $orbitlist] part1 part2
+lassign [solve [read -nonewline stdin]] part1 part2
 puts "Part 1: $part1"
 puts "Part 2: $part2"
