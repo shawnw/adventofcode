@@ -3,6 +3,7 @@
 package require math::complexnumbers
 namespace import ::math::complexnumbers::complex ::math::complexnumbers::real \
     ::math::complexnumbers::imag
+namespace path {::tcl::mathfunc}
 
 proc decode {insn} {
     set op [format "%05s" $insn]
@@ -225,22 +226,6 @@ proc solve {prog input} {
         }
     }
     return $grid
-}
-
-proc min {a b} {
-    if {$a > $b} {
-        return $b
-    } else {
-        return $a
-    }
-}
-
-proc max {a b} {
-    if {$a > $b} {
-        return $a
-    } else {
-        return $b
-    }
 }
 
 set prog [read -nonewline stdin]

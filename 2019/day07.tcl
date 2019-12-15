@@ -1,5 +1,7 @@
 #!/usr/bin/tclsh
 
+namespace path {::tcl::mathfunc}
+
 proc decode {insn} {
     set op [format %05s $insn]
     set opcode [string trimleft [string range $op 3 end] "0"]
@@ -91,14 +93,6 @@ proc run {insns input} {
                 error "Unknown opcode $op at position $ip"
             }
         }
-    }
-}
-
-proc max {a b} {
-    if {$a > $b} {
-        return $a
-    } else {
-        return $b
     }
 }
 
