@@ -1,9 +1,10 @@
 #!/usr/bin/tclsh
 
+package require struct::list
 namespace path {::tcl::mathfunc}
 
 proc decode {insn} {
-    set op [format %05s $insn]
+    set op [format "%05s" $insn]
     set opcode [string trimleft [string range $op 3 end] "0"]
     set mode1 [string index $op 2]
     set mode2 [string index $op 1]
@@ -11,52 +12,92 @@ proc decode {insn} {
     return [list $opcode $mode1 $mode2 $mode3]
 }
 
-proc getparam {ureg mode insns n} {
-    upvar $ureg reg
-    set reg [if $mode {
-        lindex $insns $n
+proc getaddr {uinsns pos {level 1}} {
+    upvar $level $uinsns insns
+    if {[dict exists $insns $pos]} {
+        return [dict get $insns $pos]
     } else {
-        lindex $insns [lindex $insns $n]
-    }]
+        dict set insns $pos 0
+        return 0
+    }
 }
 
-proc run {insns input} {
-    yield starting
+proc getparam {mode insns ip rbp} {
+    set n [expr $ip]
+    switch $mode {
+        1 {
+            return [getaddr $insns $n 2]
+        }
+        2 {
+            set base [getaddr $insns $n 2]
+            return [getaddr $insns [expr {$base + $rbp}] 2]
+        }
+        0 {
+            return [getaddr $insns [getaddr $insns $n 2] 2]
+        }
+        default {
+            error "Unknown mode $mode"
+        }
+    }
+}
+
+proc run {insns next {input {}}} {
+    set arg [yield [info coroutine]]
+    if {$arg ne ""} {
+        lappend input {*}$arg
+    }
     set ip 0
+    set rbp 0
+    set output {}
     while 1 {
-        lassign [decode [lindex $insns $ip]] op mode1 mode2 mode3
+        lassign [decode [dict get $insns $ip]] op mode1 mode2 mode3
         switch $op {
             1 { # Addition
-                getparam r0 $mode1 $insns $ip+1
-                getparam r1 $mode2 $insns $ip+2
-                set r2 [lindex $insns $ip+3]
-                lset insns $r2 [expr {$r0 + $r1}]
+                set r0 [getparam $mode1 insns $ip+1 $rbp]
+                set r1 [getparam $mode2 insns $ip+2 $rbp]
+                set r2 [getaddr insns [expr {$ip+3}]]
+                if {$mode3 == 2} {
+                    incr r2 $rbp
+                }
+                dict set insns $r2 [expr {$r0 + $r1}]
                 incr ip 4
             }
             2 { # Multiplication
-                getparam r0 $mode1 $insns $ip+1
-                getparam r1 $mode2 $insns $ip+2
-                set r2 [lindex $insns $ip+3]
-                lset insns $r2 [expr {$r0 * $r1}]
+                set r0 [getparam $mode1 insns $ip+1 $rbp]
+                set r1 [getparam $mode2 insns $ip+2 $rbp]
+                set r2 [getaddr insns [expr {$ip+3}]]
+                if {$mode3 == 2} {
+                    incr r2 $rbp
+                }
+                dict set insns $r2 [expr {$r0 * $r1}]
                 incr ip 4
             }            
-            3 { # Input                
-                while {$input eq ""} {
-                    set input [yield input]
+            3 { # Input
+                while {[llength $input] == 0} {
+                    if {[llength $output] > 0} {
+                        set input [yieldto $next $output]
+                        set output {}
+                    } else {
+                        error "[info coroutine] wanting input, no output queued"
+                    }
                 }
-                set r0 [lindex $insns $ip+1]
-                lset insns $r0 [lindex $input 0]
-                set input [lrange $input 1 end]
+                
+                set r0 [getaddr insns [expr {$ip+1}]]
+                if {$mode1 == 2} {
+                    incr r0 $rbp
+                }
+                set arg [::struct::list shift input]
+                dict set insns $r0 $arg
                 incr ip 2
             }
             4 { # Output
-                getparam r0 $mode1 $insns $ip+1
+                set r0 [getparam $mode1 insns $ip+1 $rbp]
                 incr ip 2
-                yield [list output $r0]
+                lappend output $r0
             }
             5 { # Jump if true
-                getparam r0 $mode1 $insns $ip+1
-                getparam r1 $mode2 $insns $ip+2
+                set r0 [getparam $mode1 insns $ip+1 $rbp]
+                set r1 [getparam $mode2 insns $ip+2 $rbp]
                 if {$r0 != 0} {
                     set ip $r1
                 } else {
@@ -64,8 +105,8 @@ proc run {insns input} {
                 }
             }
             6 { # Jump if false
-                getparam r0 $mode1 $insns $ip+1
-                getparam r1 $mode2 $insns $ip+2
+                set r0 [getparam $mode1 insns $ip+1 $rbp]
+                set r1 [getparam $mode2 insns $ip+2 $rbp]
                 if {$r0 == 0} {
                     set ip $r1
                 } else {
@@ -73,21 +114,37 @@ proc run {insns input} {
                 }
             }
             7 { # Less-than
-                getparam r0 $mode1 $insns $ip+1
-                getparam r1 $mode2 $insns $ip+2
-                set r2 [lindex $insns $ip+3]
-                lset insns $r2 [expr {$r0 < $r1}]
+                set r0 [getparam $mode1 insns $ip+1 $rbp]
+                set r1 [getparam $mode2 insns $ip+2 $rbp]
+                set r2 [getaddr insns [expr {$ip+3}]]
+                if {$mode3 == 2} {
+                    incr r2 $rbp
+                }
+                dict set insns $r2 [expr {$r0 < $r1}]
                 incr ip 4
             }
             8 { # Equals
-                getparam r0 $mode1 $insns $ip+1
-                getparam r1 $mode2 $insns $ip+2
-                set r2 [lindex $insns $ip+3]
-                lset insns $r2 [expr {$r0 == $r1}]
+                set r0 [getparam $mode1 insns $ip+1 $rbp]
+                set r1 [getparam $mode2 insns $ip+2 $rbp]
+                set r2 [getaddr insns [expr {$ip+3}]]
+                if {$mode3 == 2} {
+                    incr r2 $rbp
+                }
+                dict set insns $r2 [expr {$r0 == $r1}]
                 incr ip 4
             }
+            9 { # Adjust relative base pointer
+                set r0 [getparam $mode1 insns $ip+1 $rbp]
+                incr rbp $r0
+                incr ip 2
+            }
             99 { # Halt
-                yield halted
+                if {[info coroutine] eq "::ampE"} {
+                    return $output
+                } else {
+                    rename [info coroutine] ""
+                    yieldto $next $output
+                }
             }
             default {
                 error "Unknown opcode $op at position $ip"
@@ -96,86 +153,42 @@ proc run {insns input} {
     }
 }
 
+proc foreach_idx {var idx lst bdy} {
+    upvar $var v $idx i
+    set i 0
+    foreach v $lst {
+        switch [catch { uplevel 1 $bdy } status] {
+            0 { incr i }
+            1 { return -code error -level 2 $status }
+            2 { return -level 2 $status }
+            3 { break }
+            4 { incr i }
+        }
+    }
+}
+
+proc compile {program} {
+    set prog [dict create]
+    foreach_idx insn i [split $program ","] {
+        dict set prog $i $insn
+    }
+    return $prog
+}
+
 proc solve {prog begin end} {
     set maxoutput -1
-    for {set a $begin} {$a < $end} {incr a} {
-        for {set b $begin} {$b < $end} {incr b} {
-            if {$a == $b} {
-                continue
-            }
-            for {set c $begin} {$c < $end} {incr c} {
-                if {$a == $c || $b == $c} {
-                    continue
-                }
-                for {set d $begin} {$d < $end} {incr d} {
-                    if {$a == $d || $b == $d || $c == $d} {
-                        continue
-                    }
-                    for {set e $begin} {$e < $end} {incr e} {
-                        if {$a == $e || $b == $e || $c == $e || $d == $e} {
-                            continue
-                        }
-                        coroutine ampA run $prog [list $a 0]
-                        coroutine ampB run $prog $b
-                        coroutine ampC run $prog $c
-                        coroutine ampD run $prog $d
-                        coroutine ampE run $prog $e
-                        set input ""
-                        set prevoutput ""
-                        set running 1
-                        while {$running} {
-                            foreach amp {ampA ampB ampC ampD ampE} {
-                                set outputted 0
-                                while {1} {
-#                                   puts -nonewline "Running $amp... "
-                                    lassign [$amp $input] state output
-                                    set input ""
-                                    switch $state {
-                                        starting {
-#                                          puts "starting out"
-                                        }
-                                        input {
-#                                           puts -nonewline "needs input... "
-                                            if {$prevoutput ne ""} {
-                                                set input $prevoutput
-                                                set prevoutput ""
-#                                               puts "using $input"
-                                            } else {
-#                                               puts "none in queue"
-                                                break
-                                            }
-                                        }
-                                        output {
-#                                           puts "outputting $output"
-                                            set prevoutput $output
-                                            set outputted 1
-                                            if {$amp eq "ampE"} {
-                                                set result $output
-                                            }
-                                            break
-                                        }
-                                        halted {
-#                                           puts "halted"
-                                            if {$amp eq "ampE"} {
-                                                set running 0
-                                            }
-                                            break
-                                        }
-                                    }
-                                    if {$outputted == 0} { set prevoutput "" }
-                                }
-                            }
-                        }
-                        set ampA {}
-                        set ampB {}
-                        set ampC {}
-                        set ampD {}
-                        set ampE {}
-                        set maxoutput [max $maxoutput $result]
-                    }
-                }
-            }
-        }
+    set phases {}
+    for {set phase $begin} {$phase < $end} {incr phase} {
+        lappend phases $phase
+    }
+    ::struct::list foreachperm trial $phases {
+        lassign $trial a b c d e
+        coroutine ampA run $prog ampB $a
+        coroutine ampB run $prog ampC $b
+        coroutine ampC run $prog ampD $c
+        coroutine ampD run $prog ampE $d
+        coroutine ampE run $prog ampA $e
+        set maxoutput [max $maxoutput [ampA 0]]
     }
     return $maxoutput
 }
@@ -183,7 +196,7 @@ proc solve {prog begin end} {
 set testno 1
 proc test {insns expected {begin 0} {end 5}} {
     global testno
-    set result [solve [split $insns ","] $begin $end]
+    set result [solve [compile $insns] $begin $end]
     if {$result == $expected} {
         puts "Test $testno: Passed."
     } else {
@@ -198,6 +211,6 @@ test "3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31
 test "3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5" 139629729 5 10
 test "3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10" 18216 5 10
 
-set prog [split [read -nonewline stdin] ","]
+set prog [compile [read -nonewline stdin]]
 puts "Part 1: [solve $prog 0 5]"
 puts "Part 2: [solve $prog 5 10]"
