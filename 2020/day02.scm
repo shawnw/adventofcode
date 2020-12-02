@@ -6,11 +6,12 @@
                    (chicken irregex))
 
 ;;; Return all submatches as values
-(define (irregex-matched-substrings match)
-  (let loop ((idx (irregex-match-num-submatches match)) (acc '()))
-    (if (= idx 0)
-        (apply values acc)
-        (loop (sub1 idx) (cons (irregex-match-substring match idx) acc)))))
+(define (irregex-matched-substrings match #!optional include-full-match)
+  (let ((end-idx (if include-full-match -1 0)))
+    (let loop ((idx (irregex-match-num-submatches match)) (acc '()))
+      (if (= idx end-idx)
+          (apply values acc)
+          (loop (sub1 idx) (cons (irregex-match-substring match idx) acc))))))
 
 (define (only-one . args) (= (count identity args) 1))
 
