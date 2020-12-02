@@ -1,3 +1,6 @@
 # Advent Of Code 2020 Solutions
 
-Probably going to use ocaml again this year.
+Mostly using Chicken 5.2 so far. Sometimes using other languages for
+alternative solutions.
+
+Unless otherwise mentioned, programs expect problem input on standard input.
