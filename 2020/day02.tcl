@@ -9,8 +9,8 @@ proc solve1 {input} {
     set valid 0
     foreach line $input {
         if {[regexp $::re $line -> min max char password]} {
-            set validator [format {^(?:[^%s]*%s[^%s]*){%d,%d}$} \
-                               $char $char $char $min $max]
+            set validator [format {^(?:[^%s]*%s){%d,%d}[^%s]*$} \
+                               $char $char $min $max $char]
             if {[regexp $validator $password]} { incr valid }
         }
     }
@@ -22,8 +22,7 @@ proc solve2 {input} {
     foreach line $input {
         if {[regexp $::re $line -> idx1 idx2 char password]} {
             incr idx1 -1
-            incr idx2 -1
-            set n [expr {$idx2 - $idx1 - 1}]
+            set n [expr {$idx2 - $idx1 - 2}]
             set validator \
                 [format {(?:^.{%d}%s.{%d}[^%s])
                          |
