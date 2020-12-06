@@ -1,9 +1,8 @@
 #!/usr/local/bin/csi -s
-(import
- (srfi 1)
- (srfi 25)
- (chicken format)
- (chicken io))
+(import (chicken format)
+        (chicken io)
+        (srfi 1)
+        (srfi 25))
 
 (define (list->array lol)
   (let ((rows (length lol))
