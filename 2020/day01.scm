@@ -1,10 +1,10 @@
 #!/usr/local/bin/csi -s
-(require-extension (srfi 1)
-                   (srfi 158)
-                   (chicken io)
-                   (chicken format))
+(import (chicken format)
+        (chicken io)
+        (srfi 1)
+        (srfi 158))
 
-; Generate all combinations of length len
+;;; Generate all combinations of length len
 (define (generate-combinations len data)
   (make-coroutine-generator
    (lambda (yield)
@@ -24,12 +24,9 @@
         (generate-combinations len numbers)))
 
 (define (solve input len)
-  (let ((nums (find-totals input 2020 len)))
-    (if nums
-        (printf "~A~%" (apply * nums))
-        (display "No solution found!\n"))))
+  (and-let* ((nums (find-totals input 2020 len)))
+            (apply * nums)))
 
 (define input (read-list))
-
-(solve input 2)
-(solve input 3)
+(printf "Part 1: ~A~%" (solve input 2))
+(printf "Part 2: ~A~%" (solve input 3))
