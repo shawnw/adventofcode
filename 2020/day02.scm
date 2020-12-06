@@ -1,9 +1,9 @@
 #!/usr/local/bin/csi -s
-(require-extension (srfi 1)
-                   (srfi 13)
-                   (chicken format)
-                   (chicken io)
-                   (chicken irregex))
+(import (chicken format)
+        (chicken io)
+        (chicken irregex)
+        (srfi 1)
+        (srfi 13))
 
 ;;; Return all submatches as values
 (define (irregex-matched-substrings match #!optional include-full-match)
