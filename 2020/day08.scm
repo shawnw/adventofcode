@@ -12,6 +12,9 @@
         (reverse-list->vector acc)
         (loop (cddr input) (cons (vector (car input) (cadr input) #f) acc)))))
 
+(define (copy-instructions instructions)
+  (vector-map vector-copy instructions))
+
 (define (reset-instructions! instructions)
   (vector-for-each (cut vector-set! <> 2 #f) instructions))
 
@@ -37,14 +40,18 @@
     (values terminated? acc)))
 
 (define (solve2 instructions)
-  (let loop ((ip 0))
-    (reset-instructions! instructions)
-    (if (>= ip (vector-length instructions))
-        #f
+  (let* ((default-insns (copy-instructions instructions))
+        (executed? (lambda (ip) (vector-ref (vector-ref default-insns ip) 2))))
+    (let loop ((ip 0))
+      (cond
+       ((>= ip (vector-length instructions)) #f)
+       ((not (executed? ip)) (loop (add1 ip)))
+       (else
         (case (vector-ref (vector-ref instructions ip) 0)
           ((acc) (loop (add1 ip)))
           ((nop jmp) =>
            (lambda (op)
+             (reset-instructions! instructions)
              (let*-values (((from to) (if (eq? op 'nop)
                                           (values 'nop 'jmp)
                                           (values 'jmp 'nop)))
@@ -52,7 +59,7 @@
                             (flip-and-try instructions ip from to)))
                (if terminated?
                    acc
-                   (loop (add1 ip))))))))))
+                   (loop (add1 ip))))))))))))
 
 (define instructions (read-input))
 (let-values (((_ accumulator) (solve1 instructions)))
