@@ -4,6 +4,7 @@
         (chicken irregex)
         (chicken string)
         (srfi 1))
+(declare (fixnum-arithmetic) (block))
 
 (define bag-re
   (sre->irregex

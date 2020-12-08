@@ -4,6 +4,7 @@
  (chicken io)
  (srfi 1)
  (srfi 14))
+(declare (fixnum-arithmetic) (block))
 
 (define (read-group #!optional (port (current-input-port)))
   (let loop ((answers '())

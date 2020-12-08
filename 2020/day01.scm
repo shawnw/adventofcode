@@ -3,6 +3,7 @@
         (chicken io)
         (srfi 1)
         (srfi 158))
+(declare (fixnum-arithmetic) (block))
 
 ;;; Generate all combinations of length len
 (define (generate-combinations len data)

@@ -3,6 +3,7 @@
         (chicken io)
         (srfi 1)
         (srfi 25))
+(declare (fixnum-arithmetic) (block))
 
 (define (list->array lol)
   (let ((rows (length lol))

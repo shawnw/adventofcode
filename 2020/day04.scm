@@ -4,6 +4,7 @@
         (chicken irregex)
         (srfi 1)
         (srfi 13))
+(declare (fixnum-arithmetic) (block))
 
 (define record-name-re (sre->irregex '(: bow (+ alpha) (look-ahead #\:))))
 ;;; For some reason a look-behind for the colon only matches once.

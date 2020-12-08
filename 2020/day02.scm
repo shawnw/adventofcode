@@ -4,6 +4,7 @@
         (chicken irregex)
         (srfi 1)
         (srfi 13))
+(declare (fixnum-arithmetic) (block))
 
 ;;; Return all submatches as values
 (define (irregex-matched-substrings match #!optional include-full-match)

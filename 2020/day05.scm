@@ -9,7 +9,7 @@
 ;;; Only used when compiling; use explicit fixnum operations for csi
 ;;; They're really just needed for division, but use everywhere
 ;;; anyways.
-(declare (fixnum-arithmetic))
+(declare (fixnum-arithmetic) (block))
 
 (define-constant rows 128)
 (define-constant columns 8)
