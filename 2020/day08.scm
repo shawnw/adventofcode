@@ -42,13 +42,13 @@
 (define (solve2 instructions)
   (let* ((default-insns (copy-instructions instructions))
         (executed? (lambda (ip) (vector-ref (vector-ref default-insns ip) 2))))
-    (let loop ((ip 0))
+    (let loop ((ip (sub1 (vector-length instructions))))
       (cond
-       ((>= ip (vector-length instructions)) #f)
-       ((not (executed? ip)) (loop (add1 ip)))
+       ((= ip 0) #f)
+       ((not (executed? ip)) (loop (sub1 ip)))
        (else
         (case (vector-ref (vector-ref instructions ip) 0)
-          ((acc) (loop (add1 ip)))
+          ((acc) (loop (sub1 ip)))
           ((nop jmp) =>
            (lambda (op)
              (reset-instructions! instructions)
@@ -59,7 +59,7 @@
                             (flip-and-try instructions ip from to)))
                (if terminated?
                    acc
-                   (loop (add1 ip))))))))))))
+                   (loop (sub1 ip))))))))))))
 
 (define instructions (read-input))
 (let-values (((_ accumulator) (solve1 instructions)))
