@@ -14,3 +14,4 @@ all the scripts to run:
 * srfi-25 (Multi-dimensional arrays)
 * srfi-133 (R7RS Vector library)
 * srfi-158 (Generators)
+* srfi-193 (Command line arguments)
