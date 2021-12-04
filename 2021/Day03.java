@@ -73,8 +73,8 @@ class Day03 {
                 }
             }
 
-            int o2r = Integer.valueOf(oxygen.get(0), 2);
-            int co2r = Integer.valueOf(co2.get(0), 2);
+            int o2r = Integer.parseInt(oxygen.get(0), 2);
+            int co2r = Integer.parseInt(co2.get(0), 2);
             System.out.println("Part 2: " + (o2r * co2r));
         } catch (IOException e) {
             System.err.println(e);

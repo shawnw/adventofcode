@@ -9,15 +9,15 @@ class Day02 {
 
     private static void parse(String line) {
         if (line.startsWith("forward")) {
-            int dist = Integer.valueOf(line.substring(8));
+            int dist = Integer.parseInt(line.substring(8));
             horizontal += dist;
             depth2 += aim * dist;
         } else if (line.startsWith("down")) {
-            int dist = Integer.valueOf(line.substring(5));
+            int dist = Integer.parseInt(line.substring(5));
             depth1 += dist;
             aim += dist;
         } else if (line.startsWith("up")) {
-            int dist = Integer.valueOf(line.substring(3));
+            int dist = Integer.parseInt(line.substring(3));
             depth1 -= dist;
             aim -= dist;
         }
