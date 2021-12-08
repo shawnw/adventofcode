@@ -28,6 +28,7 @@ public class Readers {
                 action.accept(scanner.nextInt());
                 return true;
             } else {
+                scanner.close();
                 return false;
             }
         }
@@ -53,4 +54,15 @@ public class Readers {
         return intStreamOfFile(Path.of(name));
     }
 
+    static public int[] intsOfCSVFile(Path path) throws IOException {
+        try (var br = Files.newBufferedReader(path)) {
+            return Arrays.stream(br.readLine().split(","))
+                .mapToInt(Integer::parseInt)
+                .toArray();
+        }
+    }
+
+    static public int[] intsOfCSVFile(String name) throws IOException {
+        return intsOfCSVFile(Path.of(name));
+    }
 }
