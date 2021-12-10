@@ -1,6 +1,7 @@
 import java.util.*;
 import java.nio.file.*;
 import java.io.*;
+import aoc.util.*;
 
 class Day04 {
 
@@ -64,9 +65,7 @@ class Day04 {
     public static void main(String[] args) {
         try {
             Scanner s = new Scanner(Path.of(args[0]));
-            var numbers = Arrays.stream(s.nextLine().split(","))
-                              .mapToInt(Integer::parseInt)
-                              .toArray();
+            var numbers = Strings.csvOfString(s.nextLine());
 
             var boards = new LinkedList<Board>();
             while (s.hasNextInt()) {

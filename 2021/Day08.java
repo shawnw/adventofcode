@@ -3,7 +3,7 @@ import java.util.regex.*;
 import java.util.stream.*;
 import java.nio.file.*;
 import java.io.*;
-import org.apache.commons.collections4.iterators.*;
+import aoc.util.*;
 
 public class Day08 {
     private static class Entry {
@@ -54,14 +54,7 @@ public class Day08 {
 
         private boolean fillOffsets(int[] offsets, int sig) {
             if (sig < signals.length) {
-                PermutationIterator<Character> perms =
-                    new PermutationIterator<Character>(signals[sig].chars()
-                                            .mapToObj(c -> Character.valueOf((char)c))
-                                            .toList());
-                while (perms.hasNext()) {
-                    String perm_s = perms.next().stream()
-                        .map(c -> c.toString())
-                        .collect(Collectors.joining());
+                for (String perm_s : StringPermutations.of(signals[sig])) {
                     char[] perm = perm_s.toCharArray();
                     int[] newOffsets = Arrays.copyOf(offsets, offsets.length);
                     switch (perm.length) {
@@ -262,7 +255,7 @@ public class Day08 {
 
     public static void main(String[] args) {
         try {
-            var input = Files.lines(Path.of(args[0])).map(line -> new Entry(line)).toList();
+            var input = Files.lines(Path.of(args[0])).map(Entry::new).toList();
 
             long part1 = input.stream()
                 .flatMap(entry ->

@@ -55,10 +55,10 @@ public class Readers {
     }
 
     static public int[] intsOfCSVFile(Path path) throws IOException {
-        try (var br = Files.newBufferedReader(path)) {
-            return Arrays.stream(br.readLine().split(","))
-                .mapToInt(Integer::parseInt)
-                .toArray();
+        return Files.lines(path)
+            .flatMap(line -> Arrays.stream(line.split(",")))
+            .mapToInt(Integer::parseInt)
+            .toArray();
         }
     }
 
