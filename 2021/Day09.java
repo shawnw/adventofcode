@@ -1,10 +1,9 @@
 import java.util.*;
 import java.nio.file.*;
 import java.io.*;
+import aoc.util.*;
 
 public class Day09 {
-    private static record Coord(int x, int y) {}
-
     private static boolean isLowPoint(int[][] map, int x, int y) {
         int point = map[x][y];
         if (x > 0 && point >= map[x - 1][y]) {

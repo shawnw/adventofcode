@@ -4,10 +4,9 @@ import java.util.regex.*;
 import java.util.stream.*;
 import java.nio.file.*;
 import java.io.*;
+import aoc.util.*;
 
 public class Day05 {
-    private record Coord(int x, int y) {}
-
     private static Stream<Coord> parseMatch(Matcher m, boolean part2) {
         Stream.Builder<Coord> c = Stream.builder();
         int x1 = Integer.parseInt(m.group(1));
