@@ -31,7 +31,7 @@ class Day03 {
 
     public static void main(String[] args) {
         try {
-            List<String> input = Files.lines(Path.of(args[0])).toList();
+            List<String> input = Files.readAllLines(Path.of(args[0]));
             int nbytes = input.get(0).length();
             int[] ones = new int[nbytes];
             Arrays.fill(ones, 0);
