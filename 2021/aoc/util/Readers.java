@@ -60,9 +60,22 @@ public class Readers {
             .mapToInt(Integer::parseInt)
             .toArray();
         }
-    }
 
     static public int[] intsOfCSVFile(String name) throws IOException {
         return intsOfCSVFile(Path.of(name));
+    }
+
+    static public int[][] denseIntGridOfFile(Path path) throws IOException {
+        try (var lines = Files.lines(path)) {
+            return lines.map(line ->
+                             line.codePoints()
+                             .map(Character::getNumericValue)
+                             .toArray())
+                .toArray(int[][]::new);
+        }
+    }
+
+    static public int[][] denseIntGridOfFile(String file) throws IOException {
+        return denseIntGridOfFile(Path.of(file));
     }
 }

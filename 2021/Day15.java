@@ -82,12 +82,8 @@ public class Day15 {
     }
 
     public static void main(String[] args) {
-        try (var lines = Files.lines(Path.of(args[0]))) {
-            int[][] grid = lines.map(line ->
-                                     line.codePoints()
-                                     .map(Character::getNumericValue)
-                                     .toArray())
-                .toArray(int[][]::new);
+        try {
+            int[][] grid = Readers.denseIntGridOfFile(args[0]);
             int risk = dijkstra(grid, false);
             System.out.println("Part 1: " + risk);
             risk = dijkstra(grid, true);

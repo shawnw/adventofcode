@@ -55,10 +55,7 @@ public class Day09 {
 
     public static void main(String[] args) {
         try {
-            int[][] map =
-                Files.lines(Path.of(args[0]))
-                .map(line -> line.codePoints().map(Character::getNumericValue).toArray())
-                .toArray(int[][]::new);
+            int[][] map = Readers.denseIntGridOfFile(args[0]);
             int maxx = map.length;
             int maxy = map[0].length;
             int risk = 0;
