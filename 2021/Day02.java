@@ -24,8 +24,8 @@ class Day02 {
     }
 
     public static void main(String[] args) {
-        try {
-            Files.lines(Path.of(args[0])).forEachOrdered(Day02::parse);
+        try (var lines = Files.lines(Path.of(args[0]))) {
+            lines.forEachOrdered(Day02::parse);
             System.out.println("Part 1: " + (depth1 * horizontal));
             System.out.println("Part 2: " + (depth2 * horizontal));
         } catch (IOException e) {

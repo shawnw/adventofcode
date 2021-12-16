@@ -46,10 +46,9 @@ public class Day05 {
     }
 
     public static void main(String[] args) {
-        try {
+        try (var lines = Files.lines(Path.of(args[0]))) {
             var re = Pattern.compile("(\\d+),(\\d+) -> (\\d+),(\\d+)");
-            var input = Files.lines(Path.of(args[0]))
-                .map(line -> re.matcher(line))
+            var input = lines.map(line -> re.matcher(line))
                 .filter(m -> m.matches()).toList();
 
             long intersections1 = solve(input.stream()

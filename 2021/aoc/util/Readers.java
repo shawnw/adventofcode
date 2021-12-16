@@ -7,7 +7,7 @@ import java.util.function.*;
 import java.util.stream.*;
 
 public class Readers {
-    static class IntStreamReader implements Spliterator.OfInt {
+    static class IntStreamReader implements Spliterator.OfInt, AutoCloseable {
         private Scanner scanner;
 
         public IntStreamReader(InputStream s) {
@@ -40,14 +40,18 @@ public class Readers {
         }
 
         public Spliterator.OfInt trySplit() { return null; }
+
+        public void close() { scanner.close(); }
     }
 
     static public IntStream intStreamOfStream(InputStream s) {
-        return StreamSupport.intStream(new IntStreamReader(s), false);
+        var str = StreamSupport.intStream(new IntStreamReader(s), false);
+        return str.onClose(() -> str.close());
     }
 
     static public IntStream intStreamOfFile(Path path) throws IOException {
-        return StreamSupport.intStream(new IntStreamReader(path), false);
+        var str = StreamSupport.intStream(new IntStreamReader(path), false);
+        return str.onClose(() -> str.close());
     }
 
     static public IntStream intStreamOfFile(String name) throws IOException {
@@ -55,11 +59,12 @@ public class Readers {
     }
 
     static public int[] intsOfCSVFile(Path path) throws IOException {
-        return Files.lines(path)
-            .flatMap(line -> Arrays.stream(line.split(",")))
+        try (var lines = Files.lines(path)) {
+        return lines.flatMap(line -> Arrays.stream(line.split(",")))
             .mapToInt(Integer::parseInt)
             .toArray();
         }
+    }
 
     static public int[] intsOfCSVFile(String name) throws IOException {
         return intsOfCSVFile(Path.of(name));

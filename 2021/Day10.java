@@ -92,10 +92,8 @@ public class Day10 {
     }
 
     public static void main(String[] args) {
-        try {
-            var input = Files.lines(Path.of(args[0]))
-                .map(Day10::new)
-                .toList();
+        try (var lines = Files.lines(Path.of(args[0]))) {
+            var input = lines.map(Day10::new).toList();
 
             int part1 = input.stream()
                 .mapToInt(Day10::score1)

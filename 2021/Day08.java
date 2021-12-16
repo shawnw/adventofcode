@@ -254,8 +254,8 @@ public class Day08 {
 
 
     public static void main(String[] args) {
-        try {
-            var input = Files.lines(Path.of(args[0])).map(Entry::new).toList();
+        try (var lines = Files.lines(Path.of(args[0]))) {
+            var input = lines.map(Entry::new).toList();
 
             long part1 = input.stream()
                 .flatMap(entry ->

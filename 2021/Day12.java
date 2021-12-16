@@ -10,7 +10,7 @@ public class Day12 {
 
     private static record Node(String name, Set<String> neighbors) {
         public boolean isSmallCave() {
-            return Day12_v2.isSmallCaveName(name());
+            return Day12.isSmallCaveName(name());
         }
     }
 
@@ -88,9 +88,8 @@ public class Day12 {
     }
 
     public static void main(String[] args) {
-        try {
-            var input = Files.lines(Path.of(args[0]))
-                .map(line -> line.split("-")).toList();
+        try (var lines = Files.lines(Path.of(args[0]))) {
+            var input = lines.map(line -> line.split("-")).toList();
             var graph = new HashMap<String, Node>();
             for (var pair : input) {
                 graph.computeIfAbsent(pair[0],
