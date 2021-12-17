@@ -5,8 +5,8 @@ import aoc.util.*;
 
 class Day01 {
     public static void main(String[] args) {
-        try {
-            var input = Readers.intStreamOfFile(args[0]).toArray();
+        try (var inputstream = Readers.intStreamOfFile(args[0])) {
+            var input = inputstream.toArray();
 
             int part1 = 0;
             for (int n = 1; n < input.length; n++) {
@@ -18,7 +18,8 @@ class Day01 {
 
             int part2 = 0;
             for (int n = 3; n < input.length; n++) {
-                if (input[n] + input[n - 1] + input[n - 2] > input[n - 1] + input[n - 2] + input[n - 3]) {
+                if (input[n] + input[n - 1] + input[n - 2]
+                    > input[n - 1] + input[n - 2] + input[n - 3]) {
                     part2++;
                 }
             }
