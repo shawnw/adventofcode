@@ -19,9 +19,13 @@ public class Day08 {
         public String[] getSignals() { return signals; }
         public String[] getDigits() { return digits; }
 
-        private static Map<Integer, Integer> displays =
-            Map.of(0b1110111, 0, 0b0010010, 1, 0b1011101, 2, 0b1011011, 3, 0b0111010, 4,
-                   0b1101011, 5, 0b1101111, 6, 0b1010010, 7, 0b1111111, 8, 0b1111011, 9);
+        private static OptHashMap<Integer, Integer> displays =
+            new OptHashMap<Integer, Integer>(Map.of(0b1110111, 0, 0b0010010, 1,
+                                                    0b1011101, 2, 0b1011011, 3,
+                                                    0b0111010, 4, 0b1101011, 5,
+                                                    0b1101111, 6, 0b1010010, 7,
+                                                    0b1111111, 8, 0b1111011, 9
+                                                    ));
         private static Map<Character, Integer> charTable =
             Map.of('a', 0, 'b', 1, 'c', 2, 'd', 3, 'e', 4, 'f', 5, 'g', 6);
 
@@ -60,7 +64,8 @@ public class Day08 {
                     switch (perm.length) {
                     case 2:
                         // 1
-                        if (displays.getOrDefault(segmentsToInt(offsets, perm_s),
+                        if (displays.getOrDefault(segmentsToInt(offsets,
+                                                                perm_s),
                                                   -1) == 1 &&
                             fillOffsets(offsets, sig + 1)) {
                             return true;
@@ -125,9 +130,10 @@ public class Day08 {
 
                     case 5:
                         // 2, 3, 5
-                        int n5 = displays.getOrDefault(segmentsToInt(offsets, perm_s),
-                                                       -1);
-                        if ((n5 == 2 || n5 == 3 || n5 == 5) &&
+                        var n5 = displays.getOptional(segmentsToInt(offsets,
+                                                                    perm_s));
+                        if (n5.isPresent() && (n5.get() == 2 || n5.get() == 3
+                                               || n5.get() == 5) &&
                             fillOffsets(offsets, sig + 1)) {
                             return true;
                         }
@@ -140,7 +146,8 @@ public class Day08 {
                         }
 
                         // Try 2
-                        int[] twoOffsets = Arrays.copyOf(newOffsets, newOffsets.length);
+                        int[] twoOffsets = Arrays.copyOf(newOffsets,
+                                                         newOffsets.length);
                         if (tryToSetOffset(twoOffsets, perm[1], 2) &&
                             tryToSetOffset(twoOffsets, perm[3], 4) &&
                             fillOffsets(twoOffsets, sig + 1)) {
@@ -150,7 +157,8 @@ public class Day08 {
                         }
 
                         // Try 3
-                        int[] threeOffsets = Arrays.copyOf(newOffsets, newOffsets.length);
+                        int[] threeOffsets = Arrays.copyOf(newOffsets,
+                                                           newOffsets.length);
                         if (tryToSetOffset(threeOffsets, perm[1], 2) &&
                             tryToSetOffset(threeOffsets, perm[3], 5) &&
                             fillOffsets(threeOffsets, sig + 1)) {
@@ -160,7 +168,8 @@ public class Day08 {
                         }
 
                         // Try 5
-                        int[] fiveOffsets = Arrays.copyOf(newOffsets, newOffsets.length);
+                        int[] fiveOffsets = Arrays.copyOf(newOffsets,
+                                                          newOffsets.length);
                         if (tryToSetOffset(fiveOffsets, perm[1], 1) &&
                             tryToSetOffset(fiveOffsets, perm[3], 5) &&
                             fillOffsets(fiveOffsets, sig + 1)) {
@@ -172,9 +181,10 @@ public class Day08 {
 
                     case 6:
                         // 0, 6, 9
-                        int n6 = displays.getOrDefault(segmentsToInt(offsets, perm_s),
-                                                       -1);
-                        if ((n6 == 0 || n6 == 6 || n6 == 9) &&
+                        var n6 = displays.getOptional(segmentsToInt(offsets,
+                                                                    perm_s));
+                        if (n6.isPresent() && (n6.get() == 0 || n6.get() == 6
+                                               || n6.get() == 9) &&
                             fillOffsets(offsets, sig + 1)) {
                             return true;
                         }
@@ -188,7 +198,8 @@ public class Day08 {
                         }
 
                         // Try 0
-                        int[] zeroOffsets = Arrays.copyOf(newOffsets, newOffsets.length);
+                        int[] zeroOffsets = Arrays.copyOf(newOffsets,
+                                                          newOffsets.length);
                         if (tryToSetOffset(zeroOffsets, perm[2], 2) &&
                             tryToSetOffset(zeroOffsets, perm[3], 4) &&
                             fillOffsets(zeroOffsets, sig + 1)) {
@@ -198,7 +209,8 @@ public class Day08 {
                         }
 
                         // Try 6
-                        int[] sixOffsets = Arrays.copyOf(newOffsets, newOffsets.length);
+                        int[] sixOffsets = Arrays.copyOf(newOffsets,
+                                                         newOffsets.length);
                         if (tryToSetOffset(sixOffsets, perm[2], 3) &&
                             tryToSetOffset(sixOffsets, perm[3], 4) &&
                             fillOffsets(sixOffsets, sig + 1)) {
@@ -208,7 +220,8 @@ public class Day08 {
                         }
 
                         // Try 9
-                        int[] nineOffsets = Arrays.copyOf(newOffsets, newOffsets.length);
+                        int[] nineOffsets = Arrays.copyOf(newOffsets,
+                                                          newOffsets.length);
                         if (tryToSetOffset(nineOffsets, perm[2], 2) &&
                             tryToSetOffset(nineOffsets, perm[3], 3) &&
                             fillOffsets(nineOffsets, sig + 1)) {
@@ -239,19 +252,18 @@ public class Day08 {
 
             int total = 0;
             for (var digit : digits) {
-                int num = displays.getOrDefault(segmentsToInt(offsets, digit), -1);
-                if (num == -1) {
+                var num = displays.getOptional(segmentsToInt(offsets, digit));
+                if (num.isEmpty()) {
                     System.err.println("Unable to find a match for " + digit);
                     System.err.println("Offsets is " + Arrays.toString(offsets));
                     return -1;
                 }
                 total *= 10;
-                total += num;
+                total += num.get();
             }
             return total;
         }
     }
-
 
     public static void main(String[] args) {
         try (var lines = Files.lines(Path.of(args[0]))) {
